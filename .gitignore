@@ -1,0 +1,23 @@
+# Backup files #
+################
+*~
+*#*
+
+# Illegal/useless  files #
+#########################
+.DS_Store
+.vscode
+vgcore*
+.notifier
+*.txt
+*.o
+*.so
+*.a
+*.out
+strace
+
+# GDB files #
+#############
+*peda*
+*gdb*
+.gdb_history
