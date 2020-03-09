@@ -45,6 +45,8 @@ fclean: clean ## Restart to 0
 
 re:     fclean all
 
+tests_run: all
+
 docker_test: fclean
     docker run --rm -v $(PWD):/project -it epitech zsh -c "cd project && make"
 
