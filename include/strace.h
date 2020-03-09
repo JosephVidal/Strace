@@ -7,6 +7,8 @@
 
 #pragma once
 
+#define _POSIX_C_SOURCE 200809L
+
 #include <inttypes.h>
 
 #if defined (__linux__)

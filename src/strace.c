@@ -9,9 +9,11 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 
 char **get_args(uint32_t argc, const char **argv)
 {
