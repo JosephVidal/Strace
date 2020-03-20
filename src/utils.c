@@ -10,12 +10,15 @@
 #include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/user.h>
 
 void free_tab(char **tab)
 {
     for (register uint8_t i = 0; tab[i] != NULL; i++)
-        free(tab[i]);
-    free(tab);
+        if (tab[i])
+            free(tab[i]);
+    if (tab)
+        free(tab);
 }
 
 void usage(void)

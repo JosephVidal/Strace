@@ -13,8 +13,10 @@
 int main(int argc, const char **argv, char *const *env)
 {
     char **args = NULL;
+    uint8_t ret = 0;
 
     if (argc < 2 || !env) {
+        usage();
         return (FAILURE);
     }
     if (strcmp(argv[1], "-h") == 0) {
@@ -24,7 +26,7 @@ int main(int argc, const char **argv, char *const *env)
     args = get_args(argc, argv);
     if (args == NULL)
         return (FAILURE);
-    strace(argv[1], args, env);
+    ret = strace(argv[1], args, env);
     free_tab(args);
-    return (SUCCESS);
+    return (ret);
 }
