@@ -70,12 +70,12 @@ void display_call(struct user_regs_struct regs)
     printf(") = 0x%llx\n", regs.rax);
 }
 
-void trace_child(pid_t pid, struct user_regs_struct regs, int32_t sig)
+void trace_child(pid_t pid, struct user_regs_struct regs, int32_t *sig)
 {
     errno = 0;
-    waitpid(pid, &sig, 0);
+    waitpid(pid, sig, 0);
     ptrace(PTRACE_SETOPTIONS, pid, NULL, PTRACE_O_TRACESYSGOOD);
-    while (WIFSTOPPED(sig)) {
+    while (WIFSTOPPED(*sig)) {
         ptrace(PTRACE_GETREGS, pid, NULL, &regs);
         if (check_call(pid))
             display_call(regs);
@@ -83,7 +83,7 @@ void trace_child(pid_t pid, struct user_regs_struct regs, int32_t sig)
 		    perror("ptrace");
             return;
         }
-        waitpid(pid, &sig, 0);
+        waitpid(pid, sig, 0);
     }
 }
 
@@ -101,10 +101,13 @@ uint8_t strace(const char *file, char *const *args, char * const *env)
     if (pid == 0) {
         ptrace(PT_TRACE_ME, 0, 0, 0);
         ret = execve(file, args, env);
-        if (ret == -1)
-            perror(file);
-    } else
-        trace_child(pid, regs, sig);
-    printf("+++ exited with %d +++\n", ret);
-    return (ret);
+        if (ret == -1) {
+            perror("execve");
+            return (FAILURE);
+        }
+    } else {
+        trace_child(pid, regs, &sig);
+        printf("+++ exited with %d +++\n", WEXITSTATUS(sig));
+    }
+    return (WEXITSTATUS(sig));
 }

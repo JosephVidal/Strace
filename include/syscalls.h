@@ -11,7 +11,7 @@
 
 #include <sys/types.h>
 
-typedef struct s_syscalls
+typedef struct __attribute__((__packed__)) s_syscalls
 {
     uint16_t    num;
     char        *name;
