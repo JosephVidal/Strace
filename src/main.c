@@ -19,7 +19,7 @@ int main(int argc, const char **argv, char *const *env)
         usage();
         return (FAILURE);
     }
-    if (strcmp(argv[1], "-h") == 0) {
+    if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
         usage();
         return (SUCCESS);
     }
