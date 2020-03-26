@@ -5,7 +5,17 @@
 ## Makefile
 ##
 
-SHELL		=	bash
+## --------- COLORS ------##
+
+DEFAULT 	= 	"\033[00m"
+RED			=	"\033[31m"
+GREEN		=	"\033[1;32m"
+TEAL		=	"\033[1;36m"
+YELLOW		=	"\033[1;7;25;33m"
+MAGENTA		=	"\033[1;3;4;35m"
+ERROR		=	"\033[5;7;1;31m"
+BLINK		=	"\033[5m"
+END			=	"\n"
 
 CC			=	gcc
 
@@ -21,10 +31,17 @@ OBJ			=	$(SRC:.c=.o)
 
 NAME		=	strace
 
+%.o	:	%.c
+	@$(CC)  $(CFLAGS) -c $< -o $@ && \
+	printf "["$(GREEN)"OK"$(DEFAULT)"] "$(TEAL)$<$(DEFAULT)" -----> "$(GREEN)$@$(DEFAULT)$(END) || \
+	printf "["$(RED)"KO"$(DEFAULT)"] "$(BLINK)$(YELLOW)$^$(DEFAULT)$(END)
+
 all:    $(NAME) ## Build
 
 $(NAME): $(OBJ) ## Linking
-	$(CC) -o $(NAME) $(OBJ) $(CFLAGS) $(LDFLAGS)
+	@$(CC) -o $(NAME) $(OBJ) $(CFLAGS) $(LDFLAGS)
+	@printf "["$(GREEN)"OK"$(DEFAULT)"]"$(TEAL)" Done : "$@$(DEFAULT)$(END) || \
+	printf "["$(RED)"KO"$(DEFAULT)"]"$(BLINK)$(YELLOW)$(NAME)$(DEFAULT)$(END)
 
 mac:	CC = clang
 mac:	all
