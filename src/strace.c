@@ -20,34 +20,28 @@
 #include <sys/syscall.h>
 #include <errno.h>
 
-char **get_args(uint32_t argc, const char **argv)
-{
-    char **buff = malloc(sizeof(char *) * argc);
-    register uint8_t i = 1;
-
-    if (!buff) {
-        perror("get_args");
-        return (NULL);
-    }
-    for (; argv[i] != NULL || i < argc; i++) {
-        buff[i - 1] = strdup(argv[i]);
-        if (!buff[i - 1]) {
-            perror("get_args");
-            return (NULL);
-        }
-    }
-    buff[i - 1] = NULL;
-    return (buff);
-}
-
 bool check_call(pid_t pid)
 {
     siginfo_t sig = {0};
 
     ptrace(PTRACE_GETSIGINFO, pid, NULL, &sig);
-    if (sig.si_code & 0x80 || sig.si_code & 0x80cd || sig.si_code & 0x050f)
-        return (true);
-    return (false);
+    return (sig.si_code & 0x80 || sig.si_code & 0x80cd || sig.si_code & 0x050f);
+}
+
+pid_t check_args(int argc, char *const *args, uint8_t *mode)
+{
+    pid_t tmp = 0;
+
+    if (argc == 3 && (!strcmp(args[1], "-p") && atoi(args[2]))) {
+        tmp = atoi(args[2]);
+        *mode = STRACE_ATTACH;
+    } else {
+        tmp = fork();
+        *mode = STRACE_EXEC;
+    }
+    if (tmp == -1)
+        perror("fork");
+    return(tmp);
 }
 
 void display_call(struct user_regs_struct regs)
@@ -70,12 +64,16 @@ void display_call(struct user_regs_struct regs)
     printf(") = 0x%llx\n", regs.rax);
 }
 
-void trace_child(pid_t pid, struct user_regs_struct regs, int32_t *sig)
+void trace_child(pid_t pid, struct user_regs_struct regs
+                    , int32_t *sig, uint8_t mode)
 {
     errno = 0;
     waitpid(pid, sig, 0);
-    ptrace(PTRACE_SETOPTIONS, pid, NULL, PTRACE_O_TRACESYSGOOD);
-    while (WIFSTOPPED(*sig)) {
+    if (mode == STRACE_ATTACH)
+        ptrace(PTRACE_ATTACH, pid, NULL, NULL);
+    else
+        ptrace(PTRACE_SETOPTIONS, pid, NULL, PTRACE_O_TRACESYSGOOD);
+    while (WIFSTOPPED(*sig) || WIFEXITED(*sig)) {
         ptrace(PTRACE_GETREGS, pid, NULL, &regs);
         if (check_call(pid))
             display_call(regs);
@@ -85,28 +83,28 @@ void trace_child(pid_t pid, struct user_regs_struct regs, int32_t *sig)
         }
         waitpid(pid, sig, 0);
     }
+    if (mode == 1)
+        ptrace(PTRACE_DETACH, pid, NULL, NULL);
 }
 
-uint8_t strace(const char *file, char *const *args, char * const *env)
+uint8_t strace(const char *file, char *const *args,
+                char * const *env, int argc)
 {
     int32_t sig = 0;
-    pid_t pid = fork();
-    int8_t ret = 0;
+    uint8_t mode = 0;
     struct user_regs_struct regs = {0};
+    pid_t pid = check_args(argc, args, &mode);
 
-    if (pid == -1) {
-        perror("strace");
+    if (pid == -1)
         return (FAILURE);
-    }
     if (pid == 0) {
         ptrace(PT_TRACE_ME, 0, 0, 0);
-        ret = execve(file, args, env);
-        if (ret == -1) {
-            perror("execve");
+        if (execve(file, &args[1], env) == -1) {
+            perror(file);
             return (FAILURE);
         }
     } else {
-        trace_child(pid, regs, &sig);
+        trace_child(pid, regs, &sig, mode);
         printf("+++ exited with %d +++\n", WEXITSTATUS(sig));
     }
     return (WEXITSTATUS(sig));

@@ -5,7 +5,7 @@
 ## Makefile
 ##
 
-## --------- COLORS ------##
+## ------ COLORS ------ ##
 
 DEFAULT 	= 	"\033[00m"
 RED			=	"\033[31m"
@@ -32,14 +32,14 @@ OBJ			=	$(SRC:.c=.o)
 NAME		=	strace
 
 %.o	:	%.c
-	@$(CC)  $(CFLAGS) -c $< -o $@ && \
+	@$(CC) $(CFLAGS) -c $< -o $@ && \
 	printf "["$(GREEN)"OK"$(DEFAULT)"] "$(TEAL)$<$(DEFAULT)" -----> "$(GREEN)$@$(DEFAULT)$(END) || \
 	printf "["$(RED)"KO"$(DEFAULT)"] "$(BLINK)$(YELLOW)$^$(DEFAULT)$(END)
 
 all:    $(NAME) ## Build
 
 $(NAME): $(OBJ) ## Linking
-	@$(CC) -o $(NAME) $(OBJ) $(CFLAGS) $(LDFLAGS)
+	@$(CC) -o $(NAME) $(OBJ) $(LDFLAGS)
 	@printf "["$(GREEN)"OK"$(DEFAULT)"]"$(TEAL)" Done : "$@$(DEFAULT)$(END) || \
 	printf "["$(RED)"KO"$(DEFAULT)"]"$(BLINK)$(YELLOW)$(NAME)$(DEFAULT)$(END)
 
@@ -54,11 +54,12 @@ mac_debeug: CC = clang ## Debeug for mac
 mac_debeug: debeug
 
 clean: ## Remove useless files
-	rm -f *~
-	rm -f $(OBJ)
+	@rm -f $(OBJ)
+	@printf "["$(RED)"DEL"$(DEFAULT)"] $(OBJ)"$(END)
 
 fclean: clean ## Restart to 0
-	rm -f $(NAME)
+	@rm -f $(NAME)
+	@printf "["$(RED)"DEL"$(DEFAULT)"] $(NAME)"$(END)
 
 re:     fclean all
 

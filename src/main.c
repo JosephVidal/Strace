@@ -12,9 +12,6 @@
 
 int main(int argc, const char **argv, char *const *env)
 {
-    char **args = NULL;
-    uint8_t ret = 0;
-
     if (argc < 2 || !env) {
         usage();
         return (FAILURE);
@@ -23,10 +20,5 @@ int main(int argc, const char **argv, char *const *env)
         usage();
         return (SUCCESS);
     }
-    args = get_args(argc, argv);
-    if (args == NULL)
-        return (FAILURE);
-    ret = strace(argv[1], args, env);
-    free_tab(args);
-    return (ret);
+    return (strace(argv[1], (char *const *)argv, env, argc));
 }

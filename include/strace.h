@@ -14,13 +14,15 @@
 #define SUCCESS 0
 #define FAILURE 84
 
+#define STRACE_ATTACH   1
+#define STRACE_EXEC     2
+
 #if defined (__APPLE__)
     #define	PTRACE_GETREGS          (PT_FIRSTMACH + 1)
     #define PTRACE_GETSIGINFO	    0x4202
     #define PTRACE_SETOPTIONS	    0x4200
     #define PTRACE_O_TRACESYSGOOD	1
     #define PTRACE_SINGLESTEP	    9
-
 
     typedef uint32_t u_int;
     typedef uint8_t u_char;
@@ -57,7 +59,7 @@
 	};
 #endif // __APPLE__
 
-uint8_t strace(const char *, char *const *, char *const *);
+uint8_t strace(const char *, char *const *, char *const *, int);
 void    free_tab(char **);
 char    **get_args(uint32_t, const char **);
 void    usage(void);
